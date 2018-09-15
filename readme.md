@@ -1,6 +1,6 @@
-###This is the simple and minimalist chat server, which was written in Kotlin.
+##This is the simple and minimalist chat server, which was written in Kotlin.
 
-######You can start to chat with command telnet [server IP address] [server port] in our case port is 50000
+You can start to chat with command telnet [server IP address] [server port] in our case port is 50000
 
 default server port is 50000
 

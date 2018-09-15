@@ -26,6 +26,10 @@ object Users {
 
     }
 
+    fun getUserList(): List<String> {
+        return userList.toList()
+    }
+
     override fun toString(): String {
         var users = userList.toList()
         var forrmatString: String = ""

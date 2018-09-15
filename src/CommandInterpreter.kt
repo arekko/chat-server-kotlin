@@ -3,16 +3,8 @@ import java.io.OutputStream
 import java.io.PrintStream
 import java.net.Socket
 import java.util.*
-import kotlin.system.exitProcess
 
 class CommandInterpreter(inputStream: InputStream, output: OutputStream, client: Socket) : ChatHistoryObserver, Runnable {
-
-    override fun newMessage(message: ChatMessage) {
-        if (message.username != username) {
-            printOut.println("${message.username} : ${message.message}")
-        }
-
-    }
 
     private val client: Socket = client
     val scanner: Scanner = Scanner(inputStream)
@@ -20,6 +12,13 @@ class CommandInterpreter(inputStream: InputStream, output: OutputStream, client:
     var username: String = " "
     var exit = false
 
+    // Observer pattern methods
+    override fun newMessage(message: ChatMessage) {
+        if (message.username != username) {
+            printOut.println("${message.username} : ${message.message}")
+        }
+
+    }
 
     override fun run() {
         ChatHistory.registerObserber(this)
@@ -30,20 +29,24 @@ class CommandInterpreter(inputStream: InputStream, output: OutputStream, client:
 
 
         do {
-
-
             while (username == " ") {
-                printOut.println("Use the command :user to set the username ")
+                printOut.println("Use the command :user [username] to set the username ")
                 val command = scanner.nextLine()
                 if (command.split(' ')[0] == ":user") {
-                    val inputCommand = command.substringAfter(' ')
-                    if(Users.addUsername(inputCommand)) {
-                        username = inputCommand
-                        printOut.println("Your username is $username")
-                        printOut.println("Now you can chat with your friends or use :help for help")
+                    val separateString = command.split(' ')
+                    if (separateString.size > 1) {
+                        val inputCommand = command.substringAfter(" ")
+                        if (Users.addUsername(inputCommand)) {
+                            username = inputCommand
+                            printOut.println("Your username is $username")
+                            printOut.println("Now you can chat with your friends or use :help for help")
+                        } else {
+                            printOut.println("This username is already taken!")
+                        }
                     } else {
-                        printOut.println("This username is already taken!")
+                        printOut.println("Oops, something went wrong")
                     }
+
                 }
             }
 
@@ -51,23 +54,34 @@ class CommandInterpreter(inputStream: InputStream, output: OutputStream, client:
 
             when (command.split(' ')[0]) {
 
-                ":users" -> printOut.println(Users.toString())
-                ":help" -> CommandList(printOut).show()
+                ":users" -> printUserList(Users.getUserList())
+                ":help" -> HelpList(printOut).show()
                 ":exit" -> shutdown()
-                ":history" -> printOut.println(ChatHistory.toString())
+                ":history" -> printMessageHistory()
 
                 else -> {
                     ChatHistory.insert(ChatMessage(username, command))
                     ChatHistory.norifyObservers(ChatMessage(username, command))
                 }
             }
-
-
         } while (!exit)
-
     }
 
-    fun shutdown() {
+
+
+    // Commands handle methods
+
+    private fun printMessageHistory() {
+        for (message: ChatMessage in ChatHistory.returnMessageList()) {
+            printOut.println(message.getMessageInOneLine())
+        }
+    }
+
+    private fun printUserList(users: List<String>) {
+        users.forEach{ printOut.println(it) }
+    }
+
+    private fun shutdown() {
         ChatHistory.norifyObservers(ChatMessage(username, "Goodbye, I am done!"))
         client.close()
         Users.removeUsername(username)

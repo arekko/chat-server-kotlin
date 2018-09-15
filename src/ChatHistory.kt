@@ -2,6 +2,8 @@ import java.util.*
 
 object ChatHistory : ChatHistoryObservable {
 
+    // Observer pattern methods
+
     val observers: MutableList<ChatHistoryObserver> = mutableListOf()
 
     override fun registerObserber(observer: ChatHistoryObserver) {
@@ -25,8 +27,9 @@ object ChatHistory : ChatHistoryObservable {
 
     }
 
-
-    override fun toString(): String {
-        return super.toString()
+    fun returnMessageList(): List<ChatMessage> {
+        return messageHistory.toList()
     }
+
+
 }
